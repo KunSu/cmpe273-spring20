@@ -1,3 +1,5 @@
+# Author: Kun Su
+# Code and Comment reference: https://docs.python.org/3/howto/sockets.html
 import socket
 import time
 import argparse
@@ -5,7 +7,6 @@ import argparse
 TCP_IP = '127.0.0.1'
 TCP_PORT = 5000
 BUFFER_SIZE = 1024
-MESSAGE = "ping"
 
 
 def send(args):
@@ -25,6 +26,11 @@ def send(args):
 
     s.close()
 
+    while True:
+        # accept connections from outside
+        (clientsocket, address) = serversocket.accept()
+        if clientsocket:
+            print(f'Connection address:{address}')
 
 def get_client_id():
     parser = argparse.ArgumentParser()
@@ -42,5 +48,6 @@ def get_client_id():
 
     return id, delay, number
 
+    clientsocket.close()
 
 send(get_client_id())
