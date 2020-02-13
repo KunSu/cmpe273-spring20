@@ -26,9 +26,15 @@ def send(args):
 
     s.close()
 
+    # 3 general ways to handle socket
+    # 1. dispatching a thread to handle clientsocket
+    # 2. create a new process to handle clientsocket
+    # 3. restructure this app to use non-blocking sockets
     while True:
         # accept connections from outside
-        (clientsocket, address) = serversocket.accept()
+        (clientsocket, address) = serversocket.accept() 
+        # The purpose of "server" socket is to produces “client” sockets
+
         if clientsocket:
             print(f'Connection address:{address}')
 
