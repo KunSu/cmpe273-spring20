@@ -14,6 +14,7 @@ def listen_forever():
     sock.bind((UDP_IP, UDP_PORT))
     print('Server started at port 4000.')
 
+    count = 0
     while True:
         data, addr = sock.recvfrom(BUFFER_SIZE)
         if data:
