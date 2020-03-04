@@ -1,47 +1,41 @@
 import socket
-import random
+import select
+import time
 
-UDP_IP = '127.0.0.1'
+UDP_IP = "127.0.0.1"
 UDP_PORT = 4000
 BUFFER_SIZE = 1024
-MESSAGE = "pong"
-map = {}
+TIMEOUT = 3
+FILE_NAME = "download.txt"
+
 
 def listen_forever():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind(("", UDP_PORT))
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((UDP_IP, UDP_PORT))
+    print('Server started at port 4000.')
 
-    count = 0
     while True:
-        count += 1
-        
-        # get the data sent to us
-        data, ip = s.recvfrom(BUFFER_SIZE)
+        data, addr = sock.recvfrom(BUFFER_SIZE)
+        if data:
+            print('Accepting a file upload...')
 
-        if count >= 100:
-            count = 0
-        else:
+        f = open(FILE_NAME, 'wb')
 
-            ack_id = random.randint(0, 10000)
-            print("{}: {}".format(ip, data.decode(encoding="utf-8").strip()))
-            data = data.decode(encoding="utf-8").strip()
-            syn = str.split(data, ",")
+        while True:
 
-            if str.startswith(data, "SYN"):
-                ack = "ACK,{},{},{},{}".format(syn[1], syn[2], int(syn[3]) + 1, ack_id)
-                # print(ack)
-                key = "{},{}".format(syn[1], syn[2])
-                map[key] = ack_id
-                s.sendto(ack.encode(), ip)
-            elif str.startswith(data, "DATA"):
-                print(data)
-                key = "{},{}".format(syn[1], syn[2])
-                ack_id = map[key]
-                if ack_id + 1 == int(syn[4]):
-                    s.sendto(MESSAGE.encode(), ip)
+            ready = select.select([sock], [], [], TIMEOUT)
+            if ready[0]:
+                data, addr = sock.recvfrom(BUFFER_SIZE)
+                row_data = data.decode(encoding="utf-8")
+                row_data = str.split(row_data, ",")
+                acknowledgement = int(row_data[0]) + 1
+                f.write(row_data[1].encode())
+                sock.sendto(str(acknowledgement).encode(), addr)
 
-        # reply back to the client
-        # s.sendto(MESSAGE.encode(), ip)
+            else:
+                print('Upload successfully completed.')
+                f.close()
+                break
 
 
 listen_forever()

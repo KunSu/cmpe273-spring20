@@ -2,56 +2,50 @@ import socket
 import time
 import random
 
-UDP_IP = '127.0.0.1'
+UDP_IP = "127.0.0.1"
 UDP_PORT = 4000
 BUFFER_SIZE = 1024
-MESSAGE = "ping"
+TIMEOUT = 1
+FILE_NAME = "upload.txt"
 
-def send(id=0):
-    
-    for x in range(int(id)):
-        unique_sequence_id = "{},{},{}".format(x, time.time(), random.randint(0, 10000))
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.sendto(FILE_NAME.encode(), (UDP_IP, UDP_PORT))
+sock.settimeout(TIMEOUT)
+
+if sock:
+    print('Connected to the server.')
+
+ack_id = random.randint(0, 10000)
+
+f = open(FILE_NAME, "r")
+data = f.read(BUFFER_SIZE)
+if data:
+    print('Starting a file ({}) upload...'.format(FILE_NAME))
+
+while(data):
+    message = "{},{}".format(ack_id, data).encode()
+    if sock.sendto(message, (UDP_IP, UDP_PORT)):
+        data = f.read(BUFFER_SIZE)
+        # time.sleep(0.02)
+
+    acknowledgement = False
+    while(not acknowledgement):
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.settimeout(1.0)
+            acknowledgement_id, _ = sock.recvfrom(BUFFER_SIZE)
+            acknowledgement_id = int(
+                acknowledgement_id.decode(encoding="utf-8"))
+            if acknowledgement_id == ack_id + 1:
+                acknowledgement = True
 
-            recv_acknowledgement = False
-            s.sendto(f"SYN,{unique_sequence_id}".encode(), (UDP_IP, UDP_PORT))
-            while(not recv_acknowledgement):
-                # s.sendto(f"SYN,{unique_sequence_id}".encode(), (UDP_IP, UDP_PORT))
-                # pre = time.time()
-                data, ip = s.recvfrom(BUFFER_SIZE)
-                print("{}: {}".format(ip, data.decode(encoding="utf-8").strip()))
-                data = data.decode(encoding="utf-8").strip()
-
-                if str.startswith(data, "ACK"):
-                    syn = str.split(data, ",")
-                    usi = str.split(unique_sequence_id, ",")
-                    # print(syn)
-                    # print(usi)
-
-                    if syn[1] == usi[0] and syn[2] == usi[1] and int(syn[3]) == int(usi[2]) + 1:
-                        recv_acknowledgement = True
-                        ack = "{},{},{},{}".format(syn[1], syn[2], syn[3], int(syn[4]) + 1)
-                        s.sendto(f"DATA,{ack},{MESSAGE}".encode(), (UDP_IP, UDP_PORT))
-                        data, ip = s.recvfrom(BUFFER_SIZE)
-                        print("received data: {}: {}".format(ip, data.decode()))
-
-                else:
-                # cur = time.time()
-                # if cur - pre >= 1:
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    s.sendto(f"SYN,{unique_sequence_id}".encode(), (UDP_IP, UDP_PORT))
-
-            
         except socket.error:
-            print("Error! {}".format(socket.error))
-            s.sendto(f"SYN,{unique_sequence_id}".encode(), (UDP_IP, UDP_PORT))
-            # exit()
+            print('Package lost, resending...')
+            sock.sendto(message, (UDP_IP, UDP_PORT))
+
+    print('Received ack({}) from the server.'.format(acknowledgement_id))
+    ack_id = acknowledgement_id + 1
 
 
-def get_client_id():
-    id = input("Enter client id:")
-    return id
-
-send(get_client_id())
+sock.close()
+f.close()
+print('File upload successfully completed.')
