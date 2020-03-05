@@ -1,0 +1,21 @@
+(base) Kuns-Macbook-Pro:tcp kun$ python3 tcp_client.py --id=A --delay=10 --number=3
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+(base) Kuns-Macbook-Pro:tcp kun$
+
+(base) Kuns-Macbook-Pro:tcp kun$ python3 tcp_client.py --id=B --delay=10 --number=5
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+Sending data: ping
+Recevied data: pong
+(base) Kuns-Macbook-Pro:tcp kun$
