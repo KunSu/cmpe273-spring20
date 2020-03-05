@@ -1,0 +1,12 @@
+(base) Kuns-Macbook-Pro:tcp kun$ python3 tcp_server.py
+Server started at port 5000.
+Connected Client:('127.0.0.1', 50601)
+Connected Client:('127.0.0.1', 50602)
+Received data: A:ping
+Received data: B:ping
+Received data: A:ping
+Received data: B:ping
+Received data: A:ping
+Received data: B:ping
+Received data: B:ping
+Received data: B:ping
