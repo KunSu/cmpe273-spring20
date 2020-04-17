@@ -1,4 +1,5 @@
-from flask import Flask, escape, request
+from flask import Flask, escape, request, render_template, url_for
+import os
 import json
 import sqlite as DB
 
@@ -7,10 +8,8 @@ app = Flask(__name__)
 # setup sqliteDB
 DB.setup_sqliteDB()
 
-# Global variables
-# TEST_ID = 0
+# local cache variables
 TEST_MAP = {}
-SCANTRON_ID = 0
 SCANTRON_MAP = {}
 
 @app.route('/')
@@ -52,12 +51,17 @@ def createSubmission(testID):
 
             response = {
                 "scantron_id": scantronID,
-                "scantron_url": "http://localhost:5000/files/{}.pdf".format(scantronID),
+                "scantron_url": "http://localhost:5000/files/{}.json".format(scantronID),
                 "name": name,
                 "subject": subject,
                 "score": score,
                 "result": result
             }
+
+            # Save uploaded file into server
+            json_file_name = "{}.json".format(scantronID)
+            with open('files/' + json_file_name, "w") as outfile: 
+                outfile.write(json.dumps(request.json))
 
             # Add new submission into TEST_MAP
             DB.addSubmission(testID, scantronID)
@@ -77,6 +81,13 @@ def getClass(testID):
         else :
             response = DB.getScantronSubmissions(testID)
             return json.dumps(response)
+
+@app.route('/files/<int:fileID>.json', methods=['GET'])
+def getFile(fileID):
+    SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+    json_url = os.path.join(SITE_ROOT, "files", "{}.json".format(fileID))
+    data = json.load(open(json_url))
+    return json.dumps(data)
 
 if __name__ == '__main__':
     app.run(debug=True)
