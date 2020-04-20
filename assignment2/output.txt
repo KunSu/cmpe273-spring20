@@ -1,0 +1,26 @@
+(base) Kuns-Macbook-Pro:~ kun$ curl --location --request POST 'http://127.0.0.1:5000/api/tests' \
+> --header 'Content-Type: application/json' \
+> --header 'Content-Type: application/json' \
+> --data-raw '{
+>     "subject": "Math",
+>     "answer_keys": {
+>         "1": "A",
+>         "2": "B",
+>         "3": "C",
+>         "..": "..",
+>         "49": "D",
+>         "50": "E"
+>     }
+> }'
+{"test_id": 1, "subject": "Math", "answer_keys": {"1": "A", "2": "B", "3": "C", "..": "..", "49": "D", "50": "E"}, "submissions": []}
+
+(base) Kuns-Macbook-Pro:~ kun$ curl --location --request POST 'http://127.0.0.1:5000/api/tests/1/scantrons' \
+> --header 'Content-Type: application/json' \
+> --header 'Content-Type: application/json' \
+> --data-binary '@/Users/kun/Documents/SJSU/CMPE 273/cmpe273-spring20/assignment2/scantron-100.json'
+{"scantron_id": 1, "scantron_url": "http://localhost:5000/files/1.json", "name": "CMPE 273", "subject": "Math", "score": 16, "result": {"1": {"actual": "B", "expected": "A"}, "..": {"actual": "..", "expected": ".."}, "50": {"actual": "E", "expected": "E"}}}
+
+(base) Kuns-Macbook-Pro:~ kun$ curl --location --request GET 'http://localhost:5000/api/tests/1' \
+> --header 'Content-Type: application/json' \
+> --data-raw ''
+{"test_id": 1, "subject": "Math", "answer_keys": {"1": "A", "2": "B", "3": "C", "..": "..", "49": "D", "50": "E"}, "submissions": [{"scantron_id": 1, "scantron_url": "http://localhost:5000/files/1.json", "name": "CMPE 273", "subject": "Math", "score": 16, "result": {"1": {"actual": "B", "expected": "A"}, "..": {"actual": "..", "expected": ".."}, "50": {"actual": "E", "expected": "E"}}}]}
