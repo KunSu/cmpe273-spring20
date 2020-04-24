@@ -12,6 +12,20 @@ DB.setup_sqliteDB()
 TEST_MAP = {}
 SCANTRON_MAP = {}
 
+def answer_keys_format_validation(answer_keys):
+
+    errorMessage = ""
+    print(answer_keys)
+    for key in answer_keys:
+        if not key.isdigit():
+            errorMessage = "Error: Answer Key's key contains non-integer value."
+            break
+        elif not answer_keys[key].isalpha():
+            errorMessage = "Error: Answer Key's value contains non-string value."
+            break
+
+    return errorMessage
+
 @app.route('/')
 def hello():
     return f'Hello, World!'
@@ -23,6 +37,10 @@ def createTest():
         # get subject, answer_keys
         subject = request.json['subject']
         answer_keys = request.json['answer_keys']
+
+        errorMessage = answer_keys_format_validation(answer_keys)
+        if errorMessage != "":
+            return errorMessage, 400 
 
         testID = DB.create_test(subject, answer_keys)
         TEST_MAP[testID] = {
@@ -44,6 +62,10 @@ def createSubmission(testID):
             subject = request.json['subject']
             actual_answer_keys = request.json['answer_keys']
 
+            errorMessage = answer_keys_format_validation(actual_answer_keys)
+            if errorMessage != "":
+                return errorMessage, 400 
+                
             # get data from DB and cache
             scantronID = DB.create_scantron(name, subject, actual_answer_keys)
             expected_answer_keys = TEST_MAP[testID]['answer_keys']
