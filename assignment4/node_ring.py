@@ -1,18 +1,54 @@
-import hashlib
+# Reference: https://en.wikipedia.org/wiki/Rendezvous_hashing
+# Reference: https://github.com/natashadsouza/Rendezvous-hashing/blob/master/hrw.py
 
+import mmh3
+import math
+import pickle
+import hashlib
 from server_config import NODES
 
-class NodeRing():
-
+# Add Rendezvous (HRW) Hashing into the Node Ring
+class NodeRing(object):
     def __init__(self, nodes):
         assert len(nodes) > 0
-        self.nodes = nodes
-    
-    def get_node(self, key_hex):
-        key = int(key_hex, 16)
-        node_index = key % len(self.nodes)
-        return self.nodes[node_index]
+        self._nodes = nodes
 
+    def add(self, node):
+        self._nodes.add(node)
+
+    def nodes(self):
+        return self._nodes
+
+    def remove(self, node):
+        self._nodes.remove(node)
+
+    # Assign key_i to the node_m where the weight w_im is the largest
+    def get_node(self, key):
+
+        key = int(key, 16)
+        weights = []
+        for node in self._nodes:
+            w = weight(node, key)
+            weights.append(w)
+            print('weight: ', w)
+
+        node_index = weights.index(max(weights))  
+        # print('node index: ', node)
+        return self._nodes[node_index]
+
+# Compute weight for all nodes
+def weight(node, key):
+    # 10,000th Prime number
+    a = 104729
+
+    # Another Prime number
+    b = 73939133
+
+    node_hash = int(hashlib.md5(pickle.dumps(node)).hexdigest(), 16)
+    key_hash = int(hashlib.md5(pickle.dumps(key)).hexdigest(), 16)
+    weight = (a * ((a * node_hash + b) * key_hash) + b) % (2 ^ 31)
+
+    return weight
 
 def test():
     ring = NodeRing(nodes=NODES)
