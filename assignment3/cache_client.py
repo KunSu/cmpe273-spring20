@@ -3,7 +3,7 @@ import socket
 
 from sample_data import USERS
 from server_config import NODES
-from pickle_hash import serialize_GET, serialize_PUT
+from pickle_hash import serialize_GET, serialize_PUT, serialize_DELETE
 from node_ring import NodeRing
 from lru_cache import lru_cache
 from bloom_filter import BloomFilter 
@@ -29,18 +29,6 @@ class UDPClient():
             print("Error! {}".format(socket.error))
             exit()
 
-    def get(key, value, client_ring):
-        response = client_ring.get_node(key).send(value)
-        return response
-
-    def put(key, value, client_ring):
-        response = client_ring.get_node(key).send(value)
-        return response
-    
-    def delete(key, value, client_ring):
-        response = client_ring.get_node(key).send(value)
-        return response
-
 def process(udp_clients):
     client_ring = NodeRing(udp_clients)
     hash_codes = set()
@@ -48,37 +36,52 @@ def process(udp_clients):
     # PUT all users.
     for u in USERS:
         data_bytes, key = serialize_PUT(u)
-        print('data_bytes: {}, key: {}'.format(data_bytes, key))
-        # response = client_ring.get_node(key).send(data_bytes)
-        response = put(key, data_bytes, client_ring)
+        response = put([key, data_bytes, client_ring])
         print(response)
         hash_codes.add(str(response.decode()))
 
 
     print(f"Number of Users={len(USERS)}\nNumber of Users Cached={len(hash_codes)}")
     
-    # GET all users.
-    for hc in hash_codes:
-        print(hc)
-        data_bytes, key = serialize_GET(hc)
-        # response = client_ring.get_node(key).send(data_bytes)
-        response = get(key, value, client_ring)
+    # GET all users
+    for u in USERS:
+        data_bytes, key = serialize_GET(u)
+        response = get([key, data_bytes, client_ring])
         print(response)
 
+    # DELETE all users.
+    for u in USERS:
+        data_bytes, key = serialize_DELETE(u)
+        response = delete([key, data_bytes, client_ring])
+        print(response)
+
+    
 @lru_cache(5)
-def get(key, value, client_ring):
+def get(data):
+    key = data[0]
+    value = data[1]
+    client_ring = data[2]
+
     if bloomfilter.is_member(key):
-        return UDPClient.get(key, value, client_ring)
+        return client_ring.get_node(key).send(value)
     else:
         return None
 
-def put(key, value, client_ring):
-    bloomfilter.add(key)
-    return UDPClient.put(key, value, client_ring)
+def put(data):
+    key = data[0]
+    value = data[1]
+    client_ring = data[2]
 
-def delete(key, client_ring):
+    bloomfilter.add(key)
+    return client_ring.get_node(key).send(value)
+
+def delete(data):
+    key = data[0]
+    value = data[1]
+    client_ring = data[2]
+    
     if bloomfilter.is_member(key):
-        return UDPClient.delete(key, client_ring)
+        return client_ring.get_node(key).send(value)
     else:
         return None
         
