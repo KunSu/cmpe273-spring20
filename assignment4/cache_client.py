@@ -26,7 +26,10 @@ class UDPClient():
 
 
 def process(udp_clients):
-    client_ring = NodeRing(udp_clients)
+    seed = [1,2,3,4]
+    weight = [5,5,5,5]
+    client_ring = NodeRing(udp_clients, seed, weight)
+    
     hash_codes = set()
     # PUT all users.
     for u in USERS:
@@ -44,7 +47,10 @@ def process(udp_clients):
         data_bytes, key = serialize_GET(hc)
         response = client_ring.get_node(key).send(data_bytes)
         print(response)
-
+    
+    LB = client_ring.load_balanced()
+    for index in LB:
+        print(LB[index])
 
 if __name__ == "__main__":
     clients = [
@@ -52,3 +58,4 @@ if __name__ == "__main__":
         for server in NODES
     ]
     process(clients)
+
