@@ -5,6 +5,7 @@ from sample_data import USERS
 from server_config import NODES
 from pickle_hash import serialize_GET, serialize_PUT, serialize_DELETE
 from node_ring import NodeRing
+from consistent_hashing import ConsistentHashing
 
 BUFFER_SIZE = 1024
 
@@ -27,11 +28,13 @@ class UDPClient():
 
 def process(udp_clients, seed, weight):
     client_ring = NodeRing(udp_clients, seed, weight)
+    client_ring = ConsistentHashing(udp_clients)
     hash_codes = set()
 
    # PUT all users.
     for u in USERS:
         data_bytes, key = serialize_PUT(u)
+        
         response = client_ring.get_node(key).send(data_bytes)
         print(response)
         hash_codes.add(str(response.decode()))

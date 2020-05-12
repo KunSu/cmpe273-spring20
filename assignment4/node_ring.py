@@ -35,7 +35,6 @@ class NodeRing():
         for node in self._nodes:
             w = weight(node, key, self.seed[index], self.weight[index])
             weights.append(w)
-            # print('weight: ', self.weight[index])
             index += 1
 
         node_index = weights.index(max(weights))  
@@ -70,4 +69,4 @@ def test():
         print(LB[index])
 
 # Uncomment to run the above local test via: python3 node_ring.py
-test()
+# test()
