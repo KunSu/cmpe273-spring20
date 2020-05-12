@@ -48,6 +48,6 @@ class BloomFilter(object):
 
     # What are the best k hashes and m bits values to store one million n keys (E.g. e52f43cd2c23bb2e6296153748382764) 
     # suppose we use the same MD5 hash key from pickle_hash.py and explain why?
-    # The best K should be around 10 and best m should be around 70,000.
-    # Having K more than 10, it will start slow down the bloom filter. 
+    # The best K should be around 13 and best m should be around 19 million with false-positive 1.0E-5.
+    # Having K more than 13, it will start slowing down the bloom filter with a slightly increased false positives rate. 
     # If we have fewer k than 10, we may suffer too many false positives.
