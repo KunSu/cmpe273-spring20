@@ -3,24 +3,36 @@ import socket
 import json
 
 from server_config import NODES
-from pickle_hash import deserialize, hash_code_hex
+from pickle_hash import deserialize, serialize, hash_code_hex
 
 BUFFER_SIZE = 1024
 
 class MyDict(dict):
     def __init__(self): 
         self = dict() 
-          
+    
+    def get(self, key):
+        value = "Key does not exist."
+        if key in self:
+            value = self[key]
+        return serialize(value)
+
     def put(self, key, value):
         self[key] = value
+        print('Save -> key: {}, value: {}'.format(key, self[key]))
         return key
+
+    def delete(self, key):
+        if key in self:
+            del self[key]
+            return 'success'
+        return 'fail'
 
 class UDPServer():
     def __init__(self, host, port):
         self.host = host
         self.port = int(port)
         self.db = MyDict()
-
 
     def extract_request(self, data_bytes):
         request = deserialize(data_bytes)
@@ -39,6 +51,8 @@ class UDPServer():
             return self.db.get(key)
         elif operation == 'PUT':
             return self.db.put(key, value)
+        elif operation == 'DELETE':
+            return self.db.delete(key)
         else:
             print(f'Error: Invalid operation={operation}')
             return 'Not supported operation={}'.format(operation)

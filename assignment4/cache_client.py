@@ -3,7 +3,7 @@ import socket
 
 from sample_data import USERS
 from server_config import NODES
-from pickle_hash import serialize_GET, serialize_PUT
+from pickle_hash import serialize_GET, serialize_PUT, serialize_DELETE
 from node_ring import NodeRing
 
 BUFFER_SIZE = 1024
@@ -25,13 +25,11 @@ class UDPClient():
             exit()
 
 
-def process(udp_clients):
-    seed = [1,2,3,4]
-    weight = [5,5,5,5]
+def process(udp_clients, seed, weight):
     client_ring = NodeRing(udp_clients, seed, weight)
-    
     hash_codes = set()
-    # PUT all users.
+
+   # PUT all users.
     for u in USERS:
         data_bytes, key = serialize_PUT(u)
         response = client_ring.get_node(key).send(data_bytes)
@@ -41,12 +39,17 @@ def process(udp_clients):
 
     print(f"Number of Users={len(USERS)}\nNumber of Users Cached={len(hash_codes)}")
     
-    # GET all users.
-    for hc in hash_codes:
-        print(hc)
-        data_bytes, key = serialize_GET(hc)
-        response = client_ring.get_node(key).send(data_bytes)
-        print(response)
+    # # GET all users
+    # for u in USERS:
+    #     data_bytes, key = serialize_GET(u)
+    #     response = client_ring.get_node(key).send(data_bytes)
+    #     print(response)
+
+    # # DELETE all users.
+    # for u in USERS:
+    #     data_bytes, key = serialize_DELETE(u)
+    #     response = client_ring.get_node(key).send(data_bytes)
+    #     print(response)
     
     LB = client_ring.load_balanced()
     for index in LB:
@@ -57,5 +60,8 @@ if __name__ == "__main__":
         UDPClient(server['host'], server['port'])
         for server in NODES
     ]
-    process(clients)
+
+    seed = [1,2,3,4]
+    weight = [5,5,5,5]
+    process(clients, seed, weight)
 

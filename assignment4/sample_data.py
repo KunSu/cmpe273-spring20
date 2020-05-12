@@ -29,7 +29,7 @@ USERS = [
         'email': 'jsmith@gmail.com',
         'age': 20
     },
-    {'name': 'user1', 'email': 'email1@gmail.com', 'age': 1},
+{'name': 'user1', 'email': 'email1@gmail.com', 'age': 1},
 {'name': 'user2', 'email': 'email2@gmail.com', 'age': 2},
 {'name': 'user3', 'email': 'email3@gmail.com', 'age': 3},
 {'name': 'user4', 'email': 'email4@gmail.com', 'age': 4},

@@ -10,6 +10,9 @@ class NodeRing():
     def __init__(self, nodes, seed, weight):
         assert len(nodes) > 0
         self._nodes = nodes
+
+        # load balanced store the workload for each node. 
+        # The key is the node index, the value is the number of workload.
         self._load_balanced = {}
 
         # An array of repersant the seed and weight for each node.
@@ -32,6 +35,7 @@ class NodeRing():
         for node in self._nodes:
             w = weight(node, key, self.seed[index], self.weight[index])
             weights.append(w)
+            # print('weight: ', self.weight[index])
             index += 1
 
         node_index = weights.index(max(weights))  
@@ -40,7 +44,7 @@ class NodeRing():
 
 # Compute weight for all nodes
 def weight(node, key, seed, weight):
-    # 10,000th Prime number
+    # The 10,000th Prime number
     a = 104729
 
     # Another Prime number
